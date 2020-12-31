@@ -1,25 +1,30 @@
 export class StCss {
 
     protected readonly cache: Map<string, string> = new Map();
-    protected readonly sheet: CSSStyleSheet;
-    readonly rules: string[] = [];
+    protected readonly sheet!: CSSStyleSheet;
+    protected readonly rules: string[][];
 
     constructor(protected readonly config: StCssConfig) {
-        this.sheet = document.head.appendChild(document.createElement('style')).sheet as CSSStyleSheet;
-        this.config.breakpoints.forEach(bp => {
-            this.sheet.insertRule(`@media screen and (min-width: ${bp}) {}`, this.sheet.cssRules.length);
-        });
+        this.rules = [0,...config.breakpoints].map(() => []);
+        if (typeof document !== 'undefined') {
+            this.sheet = document.head.appendChild(document.createElement('style')).sheet as CSSStyleSheet;
+            this.config.breakpoints.forEach(bp => {
+                this.sheet.insertRule(`@media screen and (min-width: ${bp}) {}`, this.sheet.cssRules.length);
+            });
+        }
     }
 
     protected onNewRule(rule: StCssRule, className: string, bp: number) {
         const ruleString = `.${className}${rule[2]}{${rule[0].replace(/[A-Z]/g, '-$&').toLowerCase()}:${rule[1]}}`;
-        this.rules.push(ruleString);
-        if (bp > 0){
-            const sheet = this.sheet.cssRules[this.sheet.cssRules.length - this.config.breakpoints.length + bp] as CSSMediaRule; 
-            sheet.insertRule(ruleString, sheet.cssRules.length);
-        }
-        else {
-            this.sheet.insertRule(ruleString, this.sheet.cssRules.length - this.config.breakpoints.length);
+        this.rules[bp].push(ruleString);
+        if (typeof document !== 'undefined') {
+            if (bp > 0){
+                const sheet = this.sheet.cssRules[this.sheet.cssRules.length - this.config.breakpoints.length + bp] as CSSMediaRule; 
+                sheet.insertRule(ruleString, sheet.cssRules.length);
+            }
+            else {
+                this.sheet.insertRule(ruleString, this.sheet.cssRules.length - this.config.breakpoints.length);
+            }
         }
     }
 
@@ -74,5 +79,13 @@ export class StCss {
             return this.config.pragma(as || C, newProps);
         }
         return Component;
+    }
+
+    toString(): string {
+        let str = this.rules[0].sort().join('');
+        this.config.breakpoints.forEach((bp, i) => {
+            str += `@media screen and (min-width: ${bp}) { ${this.rules[i+1].sort().join('') }}`;
+        });
+        return str;
     }
 }
