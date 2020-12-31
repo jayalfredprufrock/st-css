@@ -1,11 +1,11 @@
-# Saint Css
+# St. Css
 _the patron saint of frontend developers_
 
 ![Version][]
 ![size][]
 
 ```sh
-npm i saint-css
+npm i st-css
 ```
 
 St. Css is a lightweight css-in-js solution that aims to bring
