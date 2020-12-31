@@ -2,6 +2,7 @@ export class StCss {
 
     protected readonly cache: Map<string, string> = new Map();
     protected readonly sheet: CSSStyleSheet;
+    readonly rules: string[] = [];
 
     constructor(protected readonly config: StCssConfig) {
         this.sheet = document.head.appendChild(document.createElement('style')).sheet as CSSStyleSheet;
@@ -12,6 +13,7 @@ export class StCss {
 
     protected onNewRule(rule: StCssRule, className: string, bp: number) {
         const ruleString = `.${className}${rule[2]}{${rule[0].replace(/[A-Z]/g, '-$&').toLowerCase()}:${rule[1]}}`;
+        this.rules.push(ruleString);
         if (bp > 0){
             const sheet = this.sheet.cssRules[this.sheet.cssRules.length - this.config.breakpoints.length + bp] as CSSMediaRule; 
             sheet.insertRule(ruleString, sheet.cssRules.length);
