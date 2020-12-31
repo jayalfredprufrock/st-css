@@ -1,7 +1,10 @@
 {
   "name": "saint-css",
   "version": "0.0.1",
+  "author": "Andrew Smiley <jayalfredprufrock@gmail.com>",
+  "license": "ISC",
   "description": "Tiny css-in-js library for a heavenly developer experience",
+  "sideEffects": false,
   "main": "dist/st-css.js",
   "module": "dist/st-css.mjs",
   "typings": "dist/st-css.d.ts",
@@ -10,9 +13,20 @@
     "prepublish": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "homepage": "https://github.com/jayalfredprufrock/saint-css#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jayalfredprufrock/saint-css.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jayalfredprufrock/saint-css/issues"
+  },
+  "devDependencies": {
+    "esbuild": "^0.8.28",
+    "rollup": "^2.35.1",
+    "rollup-plugin-dts": "^2.0.1",
+    "rollup-plugin-esbuild": "^2.6.1",
+    "typescript": "^4.1.3"
   },
   "keywords": [
     "css-in-js",
@@ -25,18 +39,5 @@
     "styled",
     "react",
     "preact"
-  ],
-  "author": "Andrew Smiley <jayalfredprufrock@gmail.com>",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/jayalfredprufrock/saint-css/issues"
-  },
-  "homepage": "https://github.com/jayalfredprufrock/saint-css#readme",
-  "devDependencies": {
-    "esbuild": "^0.8.28",
-    "rollup": "^2.35.1",
-    "rollup-plugin-dts": "^2.0.1",
-    "rollup-plugin-esbuild": "^2.6.1",
-    "typescript": "^4.1.3"
-  }
+  ]
 }
