@@ -4,8 +4,8 @@ the patron saint of frontend developers
 [![Version][]][npm]
 ![size][]
 
-[version]: https://flat.badgen.net/npm/v/styled-system
-[size]: https://flat.badgen.net/bundlephobia/minzip/styled-system
+[version]: https://flat.badgen.net/npm/v/saint-css
+[size]: https://flat.badgen.net/bundlephobia/minzip/saint-css
 
 ```sh
 npm i saint-css
