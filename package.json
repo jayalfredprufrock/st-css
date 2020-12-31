@@ -1,0 +1,41 @@
+{
+  "name": "saint-css",
+  "version": "0.0.1",
+  "description": "Tiny css-in-js library for a heavenly developer experience",
+  "main": "dist/st-css.js",
+  "module": "dist/st-css.mjs",
+  "typings": "dist/st-css.d.ts",
+  "scripts": {
+    "build": "rollup -c",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jayalfredprufrock/saint-css.git"
+  },
+  "keywords": [
+    "css-in-js",
+    "cxs",
+    "styled-system",
+    "styled-components",
+    "emotion",
+    "fela",
+    "atomic css",
+    "styled",
+    "react",
+    "preact"
+  ],
+  "author": "Andrew Smiley <jayalfredprufrock@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jayalfredprufrock/saint-css/issues"
+  },
+  "homepage": "https://github.com/jayalfredprufrock/saint-css#readme",
+  "devDependencies": {
+    "esbuild": "^0.8.28",
+    "rollup": "^2.35.1",
+    "rollup-plugin-dts": "^2.0.1",
+    "rollup-plugin-esbuild": "^2.6.1",
+    "typescript": "^4.1.3"
+  }
+}
