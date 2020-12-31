@@ -12,5 +12,5 @@ St. Css is a lightweight css-in-js solution that aims to bring
 the best features from the many libraries that came before it.
 
 
-[version]: https://flat.badgen.net/npm/v/saint-css
-[size]: https://flat.badgen.net/bundlephobia/minzip/saint-css
+[version]: https://flat.badgen.net/npm/v/st-css
+[size]: https://flat.badgen.net/bundlephobia/minzip/st-css
