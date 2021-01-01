@@ -1,7 +1,7 @@
 # St. Css
 _the patron saint of frontend developers_
 
-![Version][]
+![version][]
 ![size][]
 
 ```sh

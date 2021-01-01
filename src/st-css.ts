@@ -4,7 +4,7 @@ export class StCss {
     protected readonly sheet!: CSSStyleSheet;
     protected readonly rules: string[][];
 
-    constructor(protected readonly config: StCssConfig) {
+    constructor(readonly config: StCssConfig) {
         this.rules = [0,...config.breakpoints].map(() => []);
         if (typeof document !== 'undefined') {
             this.sheet = document.head.appendChild(document.createElement('style')).sheet as CSSStyleSheet;
@@ -19,7 +19,7 @@ export class StCss {
         this.rules[bp].push(ruleString);
         if (typeof document !== 'undefined') {
             if (bp > 0){
-                const sheet = this.sheet.cssRules[this.sheet.cssRules.length - this.config.breakpoints.length + bp] as CSSMediaRule; 
+                const sheet = this.sheet.cssRules[this.sheet.cssRules.length - this.config.breakpoints.length - 1 + bp] as CSSMediaRule; 
                 sheet.insertRule(ruleString, sheet.cssRules.length);
             }
             else {
@@ -48,6 +48,12 @@ export class StCss {
         }).join(' ');
     }
 
+    mergeRules = (...ruleSets: StCssRules[]): StCssRules => {
+        const map = new Map<string, StCssRule>();
+        ruleSets.filter(r => r).forEach(rules => rules.forEach((r => map.set(r[2]+r[0], r))));
+        return Array.from(map.values());
+    }
+
     extractRulesByBp = (styleObj: Styles, prefix = '', result?: StCssRules[]): StCssRules[] => {
         return Object.keys(styleObj || {}).reduce((acc, k) => {
           if (typeof styleObj[k] === 'object') {
@@ -66,9 +72,9 @@ export class StCss {
     
     st = (...styles: (Styles | StCssRules[])[]): string => {
         const ruleSets = styles.map(s => Array.isArray(s) ? s : this.extractRulesByBp(s));
-        const maps = [0, ...this.config.breakpoints].map(_ => new Map<string, StCssRule>());
-        ruleSets.forEach(rs => rs.forEach((rules, i) => rules.length && rules.forEach(r => maps[i].set(r[2]+r[0], r as StCssRule))));
-        return maps.filter(m => m.size).map((m, i) => Array.from(m.values()).map(rule => this.className(rule, i)).join(' ')).join(' ');
+        return [0, ...this.config.breakpoints].map((_, i) => {
+            return this.mergeRules(...ruleSets.map(rs => rs[i])).map(rule => this.className(rule, i)).join(' ');
+        }).join(' ')
     }
 
     canonize = (C: any) => (...styles: (Styles | StCssRules[] | ((props: any, stcss: StCss) => Styles | StCssRules[]))[]) => {
