@@ -8,8 +8,9 @@ export const spacingShorthands = (rule: StCssRule, _: number): StCssRules | unde
             'Top': ['y','t'],
             'Bottom': ['y','b']
         };
+        const val = typeof rule[1] == 'number' ? `${rule[1]}px` : rule[1];
         const rules: StCssRules = [];
-        Object.keys(suffixes).forEach(s => (suffixes[s].includes(match[2]) || !match[2]) && rules.push([prefix+s, rule[1], rule[2]]));
+        Object.keys(suffixes).forEach(s => (suffixes[s].includes(match[2]) || !match[2]) && rules.push([prefix+s, val, rule[2]]));
         return rules;
     }
 }
