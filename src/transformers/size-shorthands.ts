@@ -5,6 +5,8 @@ const sizeProps: Record<string, string> = {
     mh: 'minHeight'
 }
 
+export const sizeShorthandProps = Object.keys(sizeProps);
+
 export const sizeShorthands = (rule: StCssRule, _: number): StCssRules | undefined => {
     const prop = sizeProps[rule[0]];
     if (prop){
