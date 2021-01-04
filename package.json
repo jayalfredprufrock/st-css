@@ -1,6 +1,6 @@
 {
   "name": "st-css",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "author": "Andrew Smiley <jayalfredprufrock@gmail.com>",
   "license": "ISC",
   "description": "Tiny css-in-js library for a heavenly developer experience",
