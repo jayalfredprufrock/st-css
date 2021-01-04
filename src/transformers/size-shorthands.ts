@@ -1,13 +1,17 @@
+import { StCssRule, StCssRules } from "../st-css";
+
 const sizeProps: Record<string, string> = {
     w: 'width',
     h: 'height',
-    mw: 'minWidth',
-    mh: 'minHeight'
+    minw: 'minWidth',
+    minh: 'minHeight',
+    maxw: 'maxWidth',
+    maxh: 'maxHeight'
 }
 
 export const sizeShorthandProps = Object.keys(sizeProps);
 
-export const sizeShorthands = (rule: StCssRule, _: number): StCssRules | undefined => {
+export const sizeShorthands = (rule: StCssRule): StCssRules | undefined => {
     const prop = sizeProps[rule[0]];
     if (prop){
        if (typeof rule[1] === 'number'){

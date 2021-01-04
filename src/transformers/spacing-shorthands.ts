@@ -1,7 +1,10 @@
+import { StCssRule, StCssRules } from "../st-css";
+
 export const paddingShorthandProps = ['p','px','py','pt','pr','pb','pl'];
 export const marginShorthandProps = ['m','mx','my','mt','mr','mb','ml'];
+export const spacingShorthandProps = [...paddingShorthandProps, ...marginShorthandProps];
 
-export const spacingShorthands = (rule: StCssRule, _: number): StCssRules | undefined => {
+export const spacingShorthands = (rule: StCssRule): StCssRules | undefined => {
     const match = /^(p|m)(x|y|l|r|t|b)?$/.exec(rule[0]);
     if (match){
         const prefix = match[1] === 'p' ? 'padding' : 'margin';

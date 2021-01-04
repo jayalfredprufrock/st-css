@@ -1,5 +1,11 @@
-import type { StCss } from "../st-css";
+import type { StCss, Styles } from "../st-css";
 
 export const styleProps = (...styleProps: (string | string[])[]) => (props: any, _: StCss): Styles => {
-    return ([] as string[]).concat(...styleProps).reduce((acc, p) => ({ ...acc, [p]: props[p] }), {} as Styles);
+    const styles: Styles = {};
+    ([] as string[]).concat(...styleProps).forEach(p => {
+        if (props[p] !== undefined) {
+            styles[p] = props[p];
+        }
+    })
+    return styles;
 }

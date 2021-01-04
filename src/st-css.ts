@@ -1,3 +1,26 @@
+export type StyleValue = number | string;
+
+export interface Styles {
+    [prop: string]: Styles | StyleValue | StyleValue[];
+}
+
+export interface StCssConfig {
+    //TODO: type this
+    pragma: Function;
+    breakpoints: ([string, string] | [number | 'none', number | 'none'])[];
+    transformers?: StTransformer[];
+}
+
+export interface StFuncComp { 
+    (props: any): any;
+    st_classes?: string
+}
+
+export type StTransformer = (rule: StCssRule, bp: number, stCss: StCss) => StCssRules | undefined;
+
+export type StCssRule = [string, StyleValue, string?];
+export type StCssRules = StCssRule[];
+
 export class StCss {
 
     protected readonly cache: Map<string, string> = new Map();
@@ -8,8 +31,8 @@ export class StCss {
         this.rules = [0,...config.breakpoints].map(() => []);
         if (typeof document !== 'undefined') {
             this.sheet = document.head.appendChild(document.createElement('style')).sheet as CSSStyleSheet;
-            this.config.breakpoints.forEach(bp => {
-                this.sheet.insertRule(`@media screen and (min-width: ${bp}) {}`, this.sheet.cssRules.length);
+            this.config.breakpoints.forEach((_, i) => {
+                this.sheet.insertRule(this.mqString(i), this.sheet.cssRules.length);
             });
         }
     }
@@ -29,42 +52,52 @@ export class StCss {
     }
 
     protected className(rule: StCssRule, bp = 0): string {
-        let rules: StCssRules = [rule];
-        for (const t of this.config.transformers || []){
-            const r = t(rule, bp);
-            if (r){
-                rules = ([] as StCssRules).concat(r);
-                break;
-            }
-        }
-        return rules.map(r => {
-            const hash = r.join() + bp;
-            const cachedClassName = this.cache.get(hash);
-            if (cachedClassName) return cachedClassName;
-            const className = `st-${this.cache.size.toString(36)}`;
-            this.onNewRule(r, className, bp);
-            this.cache.set(hash, className);
-            return className;
-        }).join(' ');
+        const hash = rule.join() + bp;
+        const cachedClassName = this.cache.get(hash);
+        if (cachedClassName) return cachedClassName;
+        const className = `st-${this.cache.size.toString(36)}`;
+        this.onNewRule(rule, className, bp);
+        this.cache.set(hash, className);
+        return className;
     }
 
     mergeRules = (...ruleSets: StCssRules[]): StCssRules => {
         const map = new Map<string, StCssRule>();
-        ruleSets.filter(r => r).forEach(rules => rules.forEach((r => map.set(r[2]+r[0], r))));
+        ruleSets.filter(r => r).forEach(rules => rules.forEach((r => map.set(`${r[2]} ${r[0]}`, r))));
         return Array.from(map.values());
+    }
+
+    processTransformers = (rule: StCssRule, bp = 0): StCssRules => {
+        const rules: StCssRules = [];
+        for (const t of this.config.transformers || []){
+            const r = t(rule, bp, this);
+            if (r){
+                rules.push(...r);
+            }
+        }
+        return rules.length ? rules : [rule];
     }
 
     extractRulesByBp = (styleObj: Styles, prefix = '', result?: StCssRules[]): StCssRules[] => {
         return Object.keys(styleObj || {}).reduce((acc, k) => {
           if (typeof styleObj[k] === 'object') {
             if (Array.isArray(styleObj[k])){
-                (styleObj[k] as StyleValue[]).forEach((v, i) => acc[i].push([k, v, prefix]))
+                let prevVal: StyleValue;
+                this.config.breakpoints.forEach((_, i) =>{
+                    const vals = styleObj[k] as StyleValue[];
+                    if (i < vals.length){
+                        prevVal = vals[i];
+                    }
+                    if ((prevVal !== undefined && prevVal !== null)){
+                        acc[i+1].push(...this.processTransformers([k, prevVal, prefix], i+1));
+                    }
+                });
             }
             else {
                 this.extractRulesByBp(styleObj[k] as Styles, prefix + k, acc);
             }
           } else {
-            acc[0].push([k, styleObj[k] as StyleValue, prefix]);
+            acc[0].push(...this.processTransformers([k, styleObj[k] as StyleValue, prefix]));
           }
           return acc;
         }, result || [0, ...this.config.breakpoints].map(_ =>[]) as StCssRules[]);
@@ -87,11 +120,26 @@ export class StCss {
         return Component;
     }
 
-    toString(): string {
+    toString = (): string => {
         let str = this.rules[0].sort().join('');
-        this.config.breakpoints.forEach((bp, i) => {
-            str += `@media screen and (min-width: ${bp}) { ${this.rules[i+1].sort().join('') }}`;
+        this.config.breakpoints.forEach((_, i) => {
+            str += this.mqString(i, this.rules[i+1].sort().join(''));
         });
         return str;
+    }
+
+    mqString = (bpIndex: number, content = ''): string => {
+        const bp = this.config.breakpoints[bpIndex];
+        let mq = '@media screen and ';
+        if (bp[0] == 'none'){
+            mq += `(max-width: ${bp[1]})`;
+        }
+        else if (bp[1] == 'none'){
+            mq += `(min-width: ${bp[0]})`;
+        }
+        else {
+            mq += `(min-width: ${bp[0]}) and (max-width: ${bp[1]})`;
+        }
+        return `${mq}{${content}}`;
     }
 }
