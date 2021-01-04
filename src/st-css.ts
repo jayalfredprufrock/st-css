@@ -30,7 +30,9 @@ export class StCss {
     constructor(readonly config: StCssConfig) {
         this.rules = [0,...config.breakpoints].map(() => []);
         if (typeof document !== 'undefined') {
-            this.sheet = document.head.appendChild(document.createElement('style')).sheet as CSSStyleSheet;
+            const styleTag = document.createElement('style');
+            styleTag.setAttribute('id', 'st-css-styles');
+            this.sheet = document.head.appendChild(styleTag).sheet as CSSStyleSheet;
             this.config.breakpoints.forEach((_, i) => {
                 this.sheet.insertRule(this.mqString(i), this.sheet.cssRules.length);
             });
