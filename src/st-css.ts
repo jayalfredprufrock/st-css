@@ -23,26 +23,49 @@ export type StCssRules = StCssRule[];
 
 export class StCss {
 
-    protected readonly cache: Map<string, string> = new Map();
-    protected readonly sheet!: CSSStyleSheet;
-    protected readonly rules: string[][];
+    protected readonly cache: Map<string, string>[];
+    protected sheet: CSSStyleSheet | undefined;
+    readonly rules: string[][];
 
     constructor(readonly config: StCssConfig) {
         this.rules = [0,...config.breakpoints].map(() => []);
+        this.cache = this.rules.map(() => new Map());
         if (typeof document !== 'undefined') {
-            const styleTag = document.createElement('style');
-            styleTag.setAttribute('id', 'st-css-styles');
-            this.sheet = document.head.appendChild(styleTag).sheet as CSSStyleSheet;
-            this.config.breakpoints.forEach((_, i) => {
-                this.sheet.insertRule(this.mqString(i), this.sheet.cssRules.length);
-            });
+            //this.hydrate();
         }
     }
 
-    protected onNewRule(rule: StCssRule, className: string, bp: number) {
-        const ruleString = `.${className}${rule[2]}{${rule[0].replace(/[A-Z]/g, '-$&').toLowerCase()}:${rule[1]}}`;
+    clear() {
+        [0,...this.config.breakpoints].forEach((_, i) => {
+            this.rules[i] = [];
+            this.cache[i].clear();
+        });
+    }
+
+    hydrate() {
+        this.clear();
+        const existingStyleTag = document.getElementById('st-css-styles');
+        existingStyleTag?.innerText.split('@media').map((ruleSets, bp) => {
+            ruleSets.split('\n').forEach((rule, i) => {
+                if (!bp || i){
+                    const ruleMatch = /^\.(st[a-z0-9]+)(.*{.*?})}?$/.exec(rule);
+                    if (ruleMatch){
+                        this.rules[bp].push(`.${ruleMatch[1]}${ruleMatch[2]}`);
+                        this.cache[bp].set(ruleMatch[1], ruleMatch[2]);
+                    }
+                    else {
+                        console.log('no match!!', rule);
+                    }
+                }
+            })
+        });
+        this.sheet = (existingStyleTag as HTMLStyleElement).sheet as CSSStyleSheet;
+        console.log(this.sheet);
+    }
+
+    protected onNewRule(ruleString: string, bp: number) {
         this.rules[bp].push(ruleString);
-        if (typeof document !== 'undefined') {
+        if (this.sheet) {
             if (bp > 0){
                 const sheet = this.sheet.cssRules[this.sheet.cssRules.length - this.config.breakpoints.length - 1 + bp] as CSSMediaRule; 
                 sheet.insertRule(ruleString, sheet.cssRules.length);
@@ -54,12 +77,12 @@ export class StCss {
     }
 
     protected className(rule: StCssRule, bp = 0): string {
-        const hash = rule.join() + bp;
-        const cachedClassName = this.cache.get(hash);
+        const ruleString = `${rule[2]}{${rule[0].replace(/[A-Z]/g, '-$&').toLowerCase()}:${rule[1]}}`;
+        const cachedClassName = this.cache[bp].get(ruleString);
         if (cachedClassName) return cachedClassName;
-        const className = `st-${this.cache.size.toString(36)}`;
-        this.onNewRule(rule, className, bp);
-        this.cache.set(hash, className);
+        const className = `st${bp}${this.cache[bp].size.toString(36)}`;
+        this.onNewRule(`.${className}${ruleString}`, bp);
+        this.cache[bp].set(ruleString, className);
         return className;
     }
 
@@ -123,9 +146,9 @@ export class StCss {
     }
 
     toString = (): string => {
-        let str = this.rules[0].sort().join('');
+        let str = this.rules[0].join('\n');
         this.config.breakpoints.forEach((_, i) => {
-            str += this.mqString(i, this.rules[i+1].sort().join(''));
+            str += this.mqString(i, this.rules[i+1].join('\n'));
         });
         return str;
     }
@@ -142,6 +165,6 @@ export class StCss {
         else {
             mq += `(min-width: ${bp[0]}) and (max-width: ${bp[1]})`;
         }
-        return `${mq}{${content}}`;
+        return `${mq}{\n${content}}`;
     }
 }
